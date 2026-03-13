@@ -1,3 +1,23 @@
+From now on, whenever you make changes to your project, just run these 3 commands:
+bashcd "E:\Backend Dev\Project\Student management"
+
+Git Commands:
+git add .
+git commit -m "describe what you changed"
+git push
+To List All files that we Pushed to git repo in that file System:
+   ------>git ls-files
+To Search File that we pushed to Git:
+	git ls-files | findstr "file_name"
+Examples:
+git ls-files | findstr ".env"
+git ls-files | findstr "node_modules"
+git ls-files | findstr "dist"
+
+See what your .gitignore is currently ignoring:
+	->>git status --ignored
+
+
 Create the NestJS Project
 nest new student-management-backend
 
