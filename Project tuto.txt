@@ -1,0 +1,358 @@
+Create the NestJS Project
+nest new student-management-backend
+
+Install Required Packages
+Inside your project folder, install these:
+npm install @nestjs/typeorm typeorm pg ---- Connect NestJS to PostgreSQL
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt ---- JWT authentication
+npm install bcrypt ---- Password hashing
+npm install class-validator class-transformer ----- DTO validation
+npm install @nestjs/config ----- Read .env variables
+
+
+
+
+
+## Line by Line Explanation (for app.module.ts)
+
+### `ConfigModule.forRoot({ isGlobal: true })`
+```
+Loads your .env file
+isGlobal: true → means every module in the app
+can read .env values without importing ConfigModule again
+```
+
+### `TypeOrmModule.forRootAsync`
+```
+forRootAsync → means "wait for ConfigService to load first,
+then set up the DB connection"
+This is important because .env values must be
+loaded before the DB tries to connect
+```
+
+### `config.get<string>('DB_HOST')`
+```
+Reads DB_HOST from your .env file
+The <string> tells TypeScript what data type to expect
+DB_PORT uses <number> because ports are numbers
+```
+
+### `entities: [__dirname + '/**/*.entity{.ts,.js}']`
+```
+This tells TypeORM to automatically find all your
+entity files (your table definitions) anywhere in the project
+Any file ending in .entity.ts will be picked up
+```
+
+### `synchronize: true`
+```
+In development → TypeORM auto-creates/updates
+your DB tables based on your entity files
+
+⚠️ WARNING: Never use synchronize: true in production
+It can wipe or alter your real data
+In production you use migrations instead
+```
+
+---
+
+## Your `.env` Should Look Exactly Like This
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=your_pgadmin_password
+DB_NAME=student_management
+
+JWT_SECRET=make_this_a_long_random_string
+JWT_EXPIRES_IN=1d
+```
+
+---
+
+## How To Test The Connection
+
+Run your NestJS app:
+```
+npm run start:dev
+```
+
+If connection is successful you will see:
+```
+[TypeORM] Connected to database ✓
+[Nest] Application is running on: http://localhost:3000
+```
+
+If it fails you will see a database connection error — most common reasons:
+```
+❌ Wrong password in .env
+❌ PostgreSQL service not running on your machine
+❌ Database name doesn't exist yet in pgAdmin
+```
+
+---
+
+## Before Running — Make Sure in pgAdmin
+```
+1. PostgreSQL service is running
+2. You created a database named → student_management
+3. The username and password in .env match your pgAdmin credentials
+
+
+
+
+
+
+
+POST /auth/register   → Create a new user account
+POST /auth/login      → Login and get JWT token
+
+GET    /students      → Get all students    (needs token)
+POST   /students      → Add student         (admin/teacher only)
+PUT    /students/:id  → Update student      (admin/teacher only)
+DELETE /students/:id  → Delete student      (admin only)
+
+GET    /courses       → Get all courses     (needs token)
+POST   /courses       → Add course          (admin/teacher only)
+PUT    /courses/:id   → Update course       (admin/teacher only)
+DELETE /courses/:id   → Delete course       (admin only)
+
+GET  /enrollment              → All enrollments  (needs token)
+POST /enrollment              → Enroll student   (needs token)
+PUT  /enrollment/:id/status   → Update status    (needs token)
+GET  /enrollment/student/:id  → Student's courses
+GET  /enrollment/course/:id   → Course's students
+
+
+
+
+
+
+
+
+
+
+So the **complete folder structure** should be:
+```
+src/
+├── auth/
+│   └── dto/
+│       ├── register.dto.ts   ✅ already exists
+│       └── login.dto.ts      ✅ already exists
+├── students/
+│   └── dto/
+│       └── create-student.dto.ts   ← create this
+├── courses/
+│   └── dto/
+│       └── create-course.dto.ts    ← create this
+└── enrollment/
+    └── dto/
+        └── create-enrollment.dto.ts ← create this
+
+
+
+
+What I Build till NOW:
+Your Backend (NestJS)  =  A restaurant kitchen
+Swagger UI             =  The menu card
+Frontend (coming next) =  The dining room customers see
+
+
+
+
+What Each Part Does
+Part		What it is			Who uses it
+
+NestJS Backend	Real application you built	Everyone indirectly
+PostgreSQL	Stores all data permanently	Backend only
+Swagger UI	Auto-generated docs page	Developers only
+Postman		Tool to test APIs manually	Developers only
+Frontend 	What real users see		End users
+(HTML/CSS/JS)
+
+
+What I Built Step by Step
+
+1. Database connection     → PostgreSQL stores data
+2. Auth system             → Register, Login, JWT tokens
+3. Students API            → Create, Read, Update, Delete
+4. Courses API             → Create, Read, Update, Delete
+5. Enrollment API          → Link students to courses
+6. JWT Guards              → Protect routes from strangers
+7. Role system             → admin / teacher / student
+8. Validation              → Reject bad input
+9. Swagger docs            → Auto document all APIs
+
+
+
+
+The Full Picture
+[Browser/Postman]  →  sends HTTP request
+      ↓
+[NestJS Backend]   →  processes the request
+      ↓
+[PostgreSQL DB]    →  saves/reads data
+      ↓
+[NestJS Backend]   →  sends response back
+      ↓
+[Browser/Postman]  →  shows the result
+
+
+
+
+What is Swagger?Swagger (now called OpenAPI) is a tool that automatically generates 
+interactive documentation for your API.
+
+Analogy: Swagger is like a restaurant menu 🍽️
+
+The kitchen = your backend API
+The menu = Swagger docs
+The waiter = HTTP requests
+The customer = frontend developer or tester
+
+
+Activities In Swaggers:
+ Auth Section
+Action			What it does
+POST /auth/register	Create new user account
+POST /auth/login	Login and get JWT token
+
+
+
+
+Admin    → GOD MODE — can do everything
+Teacher  → Can manage but cannot delete anything
+Student  → Read only — sees only their own data
+
+
+
+
+### Full Flow in Simple Words
+```
+1. User registers     → role saved in database
+2. User logs in       → role packed into JWT token
+3. User sends request → token sent in header
+4. JWT Strategy       → unpacks token, reads role
+5. Roles Guard        → checks if role is allowed
+6. Controller         → allows or blocks the action
+```
+
+---
+
+### Visual Flow
+```
+[Login]
+   ↓
+Email + Password sent to backend
+   ↓
+Backend checks database → finds role = "admin"
+   ↓
+Backend creates JWT token with role inside
+   ↓
+Token sent back to browser
+   ↓
+[Every Request]
+   ↓
+Browser sends token in header
+   ↓
+Backend reads token → finds role = "admin"
+   ↓
+RolesGuard checks → "admin" allowed? ✅
+   ↓
+Request goes through
+
+
+-------------------------------------------------------------------------------------------
+
+
+FRONTEND:
+	File Structure We'll Create:
+
+
+student-management-frontend/
+├── index.html          ← Login & Register
+├── dashboard.html      ← Stats overview
+├── students.html       ← Student management
+├── courses.html        ← Course management
+├── enrollment.html     ← Enrollment management
+├── css/
+│   └── style.css       ← All styling
+└── js/
+    ├── api.js          ← All API calls
+    ├── auth.js         ← Login, logout, token
+    ├── students.js     ← Student functions
+    ├── courses.js      ← Course functions
+    └── enrollment.js   ← Enrollment functions
+
+
+
+
+
+USER ACCOUNT:ADMIN
+email: root@smack.com
+pass:rootme
+
+USER ACCOUNT:Teacher
+email: john@gmail.com
+pass:123456
+
+USER ACCOUNT:Teacher
+email: parwinr@gmail.com
+pass:123456
+
+USER ACCOUNT: Student
+email: aki@gmail.com
+pass:1234568
+
+
+
+Backend (NestJS)
+✅ Database        — PostgreSQL connected
+✅ Auth Module     — Login with JWT tokens
+✅ Students Module — Full CRUD + Validation
+✅ Courses Module  — Full CRUD + Validation
+✅ Enrollment      — Link students to courses
+✅ JWT Guards      — Protected routes
+✅ Role System     — admin / teacher / student
+✅ Validation      — DTOs with class-validator
+✅ Swagger Docs    — API documentation
+✅ CORS            — Frontend connection
+
+
+Frontend (HTML/CSS/JS)
+✅ Login Page      — Secure, admin only access
+✅ Dashboard       — Stats + Create User (admin)
+✅ Students Page   — View, Add, Edit, Delete
+✅ Courses Page    — View, Add, Edit, Delete
+✅ Enrollment Page — Enroll, Update status, Delete
+✅ Role Based UI   — Buttons show/hide by role
+✅ JWT Auth        — Token stored in localStorage
+✅ Sidebar         — Navigation + user info + logout
+
+
+
+You Learned
+NestJS    → Backend framework
+PostgreSQL → Database
+TypeORM   → Database ORM
+JWT       → Authentication tokens
+Bcrypt    → Password hashing
+RBAC      → Role based access control
+REST API  → HTTP methods
+CORS      → Cross origin requests
+HTML/CSS/JS → Frontend development
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
