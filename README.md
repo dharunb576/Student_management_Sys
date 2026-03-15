@@ -47,7 +47,7 @@ A full-stack Student Management System built with **NestJS**, **TypeORM**, **Pos
 ## 📁 Project Structure
 ```
 Student management/
-└── student-management-backend/         # NestJS API Server + Frontend
+└── student-management-system/         # NestJS API Server + Frontend
     ├── public/                         # Frontend (served by NestJS)
     │   ├── index.html                  # Login page
     │   ├── dashboard.html              # Dashboard with stats
@@ -136,11 +136,11 @@ cd Student_management_Sys
 
 ### 2. Setup the Backend
 ```bash
-cd student-management-backend
+cd student-management-system
 npm install
 ```
 
-Create a `.env` file inside `student-management-backend/`:
+Create a `.env` file inside `student-management-system/`:
 ```env
 DB_HOST=localhost
 DB_PORT=5432
