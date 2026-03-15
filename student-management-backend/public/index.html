@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Management — Login</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="logo">🎓</div>
+      <h1>EduManage</h1>
+      <p>A complete student management system for modern educational institutions.</p>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <h2>Welcome back</h2>
+      <p class="subtitle">Sign in with your credentials provided by your admin</p>
+      <div id="alertBox" class="alert"></div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required/>
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">Sign In</button>
+      </form>
+      <p style="text-align:center;margin-top:20px;font-size:13px;color:#64748b">
+        🔒 Access is granted by your institution admin only.
+      </p>
+    </div>
+  </div>
+</div>
+<script src="js/api.js"></script>
+<script>
+  if (getToken()) window.location.href = 'dashboard.html';
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<span class="spinner"></span> Signing in...';
+    btn.disabled = true;
+    try {
+      const data = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: document.getElementById('loginEmail').value,
+          password: document.getElementById('loginPassword').value,
+        }),
+      });
+      setAuth(data.access_token, data.user);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      showAlert('alertBox', err.message, 'danger');
+      btn.innerHTML = 'Sign In';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html> 
