@@ -8,10 +8,10 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // ✅ Serve frontend static files
+  //  Serve frontend static files
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
-  // ✅ Enable CORS
+  //  Enable CORS
   app.enableCors({
     origin: '*',
     methods: 'GET,POST,PUT,DELETE,PATCH',

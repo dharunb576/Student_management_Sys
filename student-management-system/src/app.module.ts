@@ -29,7 +29,7 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
 
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
 
-        synchronize: true, // ⚠️ only for development, turn off in production
+        synchronize: true, //  only for development, turn off in production
       }),
     }),
 
